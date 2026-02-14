@@ -1,7 +1,13 @@
 FROM php:8.2-apache
 
-# Instalar extensiones PHP necesarias
-RUN docker-php-ext-install pdo pdo_mysql
+# Instalar dependencias del sistema + extensiones PHP
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    libicu-dev \
+    unzip \
+    git \
+    && docker-php-ext-install pdo pdo_mysql zip intl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Habilitar mod_rewrite para Laminas
 RUN a2enmod rewrite
@@ -19,13 +25,20 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Copiar aplicación
 WORKDIR /var/www/html
+COPY composer.json composer.lock* ./
+
+# Instalar dependencias primero (cache de layers)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts || \
+    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-req=ext-intl
+
+# Copiar el resto de la aplicación
 COPY . .
 
 # Copiar config de producción
 COPY docker-local.php config/autoload/local.php
 
-# Instalar dependencias (sin dev)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Regenerar autoloader con todos los archivos
+RUN composer dump-autoload --optimize --no-interaction
 
 # Permisos
 RUN chown -R www-data:www-data /var/www/html \
