@@ -1,0 +1,33 @@
+{
+  "name": "luigis/pos-backend",
+  "description": "POS Luigi's Pizza - Backend API",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "laminas",
+    "pos",
+    "api"
+  ],
+  "require": {
+    "php": "^8.0 || ~8.1 || ~8.2",
+    "firebase/php-jwt": "^6.10",
+    "laminas/laminas-db": "^2.20",
+    "laminas/laminas-inputfilter": "^2.30",
+    "laminas/laminas-json": "^3.6",
+    "laminas/laminas-mvc": "^3.1.1",
+    "laminas/laminas-router": "^3.16",
+    "laminas/laminas-session": "^2.25",
+    "laminas/laminas-validator": "^2.65"
+  },
+  "autoload": {
+    "psr-4": {
+      "Application\\": "module/Application/src/",
+      "Auth\\": "module/Auth/src/",
+      "Catalog\\": "module/Catalog/src/",
+      "Orders\\": "module/Orders/src/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
