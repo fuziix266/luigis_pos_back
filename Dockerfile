@@ -34,14 +34,17 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 # Copiar el resto de la aplicación
 COPY . .
 
-# Copiar config de producción
-COPY docker-local.php config/autoload/local.php
-
 # Regenerar autoloader con todos los archivos
 RUN composer dump-autoload --optimize --no-interaction
+
+# Copiar y preparar entrypoint (genera local.php desde variables de entorno)
+COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Permisos
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
 EXPOSE 80
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
