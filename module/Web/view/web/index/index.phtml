@@ -1,0 +1,141 @@
+<?php
+$this->headLink()->appendStylesheet($this->basePath('/web-assets/css/index.css'));
+$this->layout()->setVariable('layout', 'web/layout');
+?>
+
+<div class="inicio">
+    <div class="menu">
+        <button class="boton-inicio boton-menu">
+            <div class="logo-menu"></div>
+        </button>
+        <button class="boton-facebook boton-menu">
+            <div class="facebook"></div>
+        </button>
+        <button class="boton-facebook boton-menu">
+            <div class="whatsapp"></div>
+        </button>
+        <button class="boton-facebook boton-menu">
+            <div class="instagram"></div>
+        </button>
+        <button class="boton-facebook boton-menu">
+            <div class="maps"></div>
+        </button>
+    </div>
+    <div class="logo-2">
+        <div class="logo">
+        </div>
+    </div>
+    <div class="botones">
+        <button class="pizzas boton">
+            <div class="fondo-boton">
+            </div>
+            <span class="texto">
+                Pizzas
+            </span>
+        </button>
+        <button class="promociones boton">
+            <div class="fondo-boton">
+            </div>
+            <span class="texto">
+                Promociones
+            </span>
+        </button>
+        <button class="promoDelDia boton">
+            <div class="fondo-boton">
+            </div>
+            <span class="texto">
+                Promo del día
+            </span>
+        </button>
+        <button class="armaTuPizza boton">
+            <div class="fondo-boton">
+            </div>
+            <span class="texto">
+                Arma tu Pizza
+            </span>
+        </button>
+        <button class="ingredientesExtra boton">
+            <div class="fondo-boton">
+            </div>
+            <span class="texto">
+                Ingredientes Extra
+            </span>
+        </button>
+        <button class="bebidasYotross boton">
+            <div class="fondo-boton">
+            </div>
+            <span class="texto">
+                Bebidas y otros
+            </span>
+        </button>
+    </div>
+</div>
+
+<!-- Modal Miércoles -->
+<div id="modalMiércoles" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <span class="bannerCerrado">&times;</span>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".pizzas").click(function() {
+            window.location.href = '<?= $this->url('web-pizzas') ?>';
+        });
+        $(".promociones").click(function() {
+            window.location.href = '<?= $this->url('web-promociones') ?>';
+        });
+        $(".promoDelDia").click(function() {
+            window.location.href = '<?= $this->url('web-promo-dia') ?>';
+        });
+        $(".armaTuPizza").click(function() {
+            window.location.href = '<?= $this->url('web-arma-tu-pizza') ?>';
+        });
+        $(".ingredientesExtra").click(function() {
+            window.location.href = '<?= $this->url('web-ingredientes-extra') ?>';
+        });
+        $(".bebidasYotross").click(function() {
+            window.location.href = '<?= $this->url('web-bebidas') ?>';
+        });
+
+        // MENU
+        $(".boton-inicio").click(function() {
+            window.location.href = '<?= $this->url('web-home') ?>';
+        });
+        $(".facebook").click(function() {
+            window.location.href = 'http://www.facebook.com/Luigispizzaarica1';
+        });
+        $(".whatsapp").click(function() {
+            window.location.href = 'https://api.whatsapp.com/send?phone=++56972461072&text=Hola!%20Me%20gustaria%20hacer%20un%20pedido!';
+        });
+        $(".instagram").click(function() {
+            window.location.href = 'https://www.instagram.com/luigisarica';
+        });
+        $(".maps").click(function() {
+            window.location.href = "https://www.google.cl/maps/dir//Luigi's+Pizza+-+Conrado+R%C3%ADos+1593,+1001085+Arica,+Arica+y+Parinacota/@-18.4856886,-70.3071732,15.25z/data=!4m8!4m7!1m0!1m5!1m1!1s0x915aa9c8e55511e9:0xdda7bced3817eaa5!2m2!1d-70.2986061!2d-18.4845687?entry=ttu";
+        });
+
+        // MODAL PARA EL MIÉRCOLES
+        var today = new Date();
+        var day = today.getDay();
+        if (day == 3) {
+            $("#modalMiércoles").show();
+        }
+
+        $(".close").click(function() {
+            $("#modalMiércoles").hide();
+        });
+
+        $(".bannerCerrado").click(function() {
+            $("#modalMiércoles").hide();
+        });
+
+        $(window).click(function(event) {
+            if (event.target.id === "modalMiércoles") {
+                $("#modalMiércoles").hide();
+            }
+        });
+    });
+</script>

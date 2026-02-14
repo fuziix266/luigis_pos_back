@@ -5,16 +5,6 @@ namespace Application;
 return [
     'router' => [
         'routes' => [
-            'home' => [
-                'type'    => \Laminas\Router\Http\Literal::class,
-                'options' => [
-                    'route'    => '/',
-                    'defaults' => [
-                        'controller' => Controller\IndexController::class,
-                        'action'     => 'index',
-                    ],
-                ],
-            ],
             'application' => [
                 'type'    => \Laminas\Router\Http\Segment::class,
                 'options' => [
@@ -51,7 +41,7 @@ return [
         'default' => [
             [
                 'label' => 'Inicio',
-                'route' => 'home',
+                'route' => 'web-home',
             ],
         ],
     ],

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sello de Seguridad Luigi's Pizzería</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter (cuerpo) y Montserrat (títulos) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Mobile-first: fuentes modernas y diseño limpio */
+        :root{
+            --purple-900: #5d2b8b;
+            --purple-800: #6a3a9a;
+            --brand-yellow: #ffcc00;
+            --white-trans: rgba(255,255,255,0.92);
+        }
+        html,body{
+            height:100%;
+        }
+        body {
+            background-color: var(--purple-900);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px; /* menor padding para móviles */
+            background-image: url('fondo.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        /* Contenedor centrado y móvil-first (full width en móviles) */
+        .container-custom {
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.06));
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+            width: 100%;
+            max-width: 420px; /* óptimo para móviles */
+            text-align: center;
+            border: 1px solid rgba(255,204,0,0.12);
+            backdrop-filter: blur(4px);
+        }
+        .logo-luigis {
+            width: 200px; /* tamaño optimizado para móviles */
+            height: auto;
+            max-width: 60%;
+            margin-bottom: 18px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h1 {
+            color: var(--brand-yellow);
+            margin: 10px 0 14px 0;
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: 0.6px;
+        }
+        p {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            font-size: 0.98rem;
+            color: rgba(255,255,255,0.95);
+        }
+        .btn-custom-whatsapp {
+            background-color: #25d366;
+            border-color: #25d366;
+            color: #fff;
+            padding: 12px 18px;
+            font-size: 1rem;
+            margin: 8px;
+            border-radius: 10px;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+            box-shadow: 0 6px 12px rgba(37,211,102,0.12);
+        }
+        .btn-custom-whatsapp:active { transform: translateY(1px); }
+        .btn-custom-whatsapp:hover {
+            background-color: #1da851;
+            border-color: #1da851;
+            color: #fff;
+        }
+        .btn-custom-luigis {
+            background-color: var(--brand-yellow);
+            border-color: var(--brand-yellow);
+            color: var(--purple-900);
+            padding: 12px 18px;
+            font-size: 1rem;
+            margin: 8px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(255,204,0,0.12);
+        }
+        .btn-custom-luigis:hover {
+            background-color: #e6b800;
+            border-color: #e6b800;
+        }
+        .instructions-list {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            margin-top: 14px;
+        }
+        .instructions-list li {
+            background-color: rgba(255, 255, 255, 0.04);
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.98em;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        /* Desktop adjustments */
+        @media (min-width: 577px) {
+            .container-custom {
+                max-width: 600px;
+                padding: 30px;
+            }
+            .logo-luigis { width: 220px; max-width: 40%; margin-bottom: 25px; }
+            h1 { font-size: 1.5rem; }
+            .btn-custom-whatsapp, .btn-custom-luigis { font-size: 1.05rem; }
+        }
+        /* Make buttons full-width on very small screens */
+        @media (max-width: 420px) {
+            .d-grid.gap-2.d-sm-flex { gap: 6px; }
+            .btn-custom-whatsapp, .btn-custom-luigis { width: 100%; margin: 6px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container container-custom">
+        <img src="logo.png" alt="Luigi's Pizzeria" class="img-fluid logo-luigis">
+        
+        <h1 class="mb-4">¡IMPORTANTE: Sello de Seguridad Luigi's!</h1>
+        
+        <p>
+            En Luigi's Pizzería, nos preocupamos por la frescura y la seguridad de tu pedido. Este sello garantiza que tu caja no ha sido abierta desde que salió de nuestra cocina.
+        </p>
+        
+        <p>
+            <strong>Si notas que este sello está roto o manipulado, por favor, avísanos de inmediato.</strong>
+        </p>
+
+        <p class="text-start mt-4"><strong>Instrucciones para reportar:</strong></p>
+        <ul class="instructions-list">
+            <li>Antes de abrir la caja, verifica el estado del sello.</li>
+            <li>Si está roto, toma una foto clara del sello y la caja.</li>
+            <li>Desde el momento de la entrega, tienes 10 minutos para reportar cualquier anomalía en el sello.</li>
+            <li>Utiliza el botón de WhatsApp a continuación para enviarnos un mensaje con tu reporte y la foto.</li>
+        </ul>
+        
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+            <a href="https://api.whatsapp.com/send?phone=56972461072&text=Quiero%20reportar%20un%20sello%20roto" target="_blank" class="btn btn-custom-whatsapp">
+                Enviar WhatsApp
+            </a>
+            <a href="https://www.luigis.cl" target="_self" class="btn btn-custom-luigis">
+                Llevarme a Luigi's
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

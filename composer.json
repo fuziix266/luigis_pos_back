@@ -24,7 +24,8 @@
       "Application\\": "module/Application/src/",
       "Auth\\": "module/Auth/src/",
       "Catalog\\": "module/Catalog/src/",
-      "Orders\\": "module/Orders/src/"
+      "Orders\\": "module/Orders/src/",
+      "Web\\": "module/Web/src/"
     }
   },
   "config": {

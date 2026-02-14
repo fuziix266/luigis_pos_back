@@ -6,6 +6,7 @@ return [
         'Laminas\\Validator',
         'Laminas\\Session',
         'Laminas\\Db',
+        'Web',
         'Application',
         'Auth',
         'Catalog',
