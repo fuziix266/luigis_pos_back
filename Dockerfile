@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql zip intl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Habilitar mod_rewrite para Laminas
-RUN a2enmod rewrite
+# Habilitar mod_rewrite y mod_headers para Laminas y CORS
+RUN a2enmod rewrite headers
 
 # Configurar DocumentRoot a /var/www/html/public
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
