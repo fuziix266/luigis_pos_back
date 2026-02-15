@@ -8,12 +8,12 @@ cat > /var/www/html/config/autoload/local.php <<PHPEOF
 return [
     'db' => [
         'driver' => 'Pdo',
-        'dsn'    => 'mysql:dbname=${DB_NAME};host=${DB_HOST};port=${DB_PORT};charset=utf8mb4',
-        'username' => '${DB_USER}',
-        'password' => '${DB_PASS}',
+        'dsn'    => 'mysql:dbname=${DB_DATABASE};host=${DB_HOST};port=${DB_PORT};charset=utf8mb4',
+        'username' => '${DB_USERNAME}',
+        'password' => '${DB_PASSWORD}',
     ],
     'jwt' => [
-        'secret'     => '${JWT_SECRET}',
+        'secret'     => '${JWT_SECRET:-luigis_pos_jwt_prod_secret_2026_x9k}',
         'expiration' => ${JWT_EXPIRATION:-86400},
     ],
 ];
