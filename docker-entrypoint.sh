@@ -11,6 +11,9 @@ return [
         'dsn'    => 'mysql:dbname=${DB_DATABASE};host=${DB_HOST};port=${DB_PORT};charset=utf8mb4',
         'username' => '${DB_USERNAME}',
         'password' => '${DB_PASSWORD}',
+        'driver_options' => [
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
+        ],
     ],
     'jwt' => [
         'secret'     => '${JWT_SECRET:-luigis_pos_jwt_prod_secret_2026_x9k}',
