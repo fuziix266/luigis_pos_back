@@ -42,23 +42,37 @@ class OrderService
 
         $totalAmount = $subtotal + $deliveryFee;
 
-        // Insertar orden
+        // Si se envió un total manual, este manda
+        if (isset($data['manual_total']) && is_numeric($data['manual_total'])) {
+            $totalAmount = (int) $data['manual_total'];
+        }
+
+        // Encontrar max sort_position p/ activos (para ponerlo al final)
+        $maxSortSelect = $sql->select('orders')->columns(['max_sort' => new Expression('MAX(sort_position)')]);
+        $maxSortSelect->where(function (Where $where) {
+            $where->notIn('status', ['ENTREGADO', 'ELIMINADO']);
+        });
+        $maxSortResult = $sql->prepareStatementForSqlObject($maxSortSelect)->execute()->current();
+        $nextSort = isset($maxSortResult['max_sort']) ? (int) $maxSortResult['max_sort'] + 1 : 0;
+
+        // Insertar orden 
         $insert = $sql->insert('orders');
         $orderData = [
-            'order_number'    => $orderNumber,
-            'user_id'         => $data['user_id'] ?? null,
-            'client_name'     => $data['client_name'] ?? 'Sin nombre',
-            'delivery_type'   => $data['delivery_type'] ?? 'Local',
-            'payment_method'  => $data['payment_method'] ?? null,
+            'order_number' => $orderNumber,
+            'user_id' => $data['user_id'] ?? null,
+            'client_name' => $data['client_name'] ?? null,
+            'delivery_type' => $data['delivery_type'] ?? null,
+            'payment_method' => $data['payment_method'] ?? null,
             'delivery_address' => $data['delivery_address'] ?? null,
-            'address_detail'  => $data['address_detail'] ?? null,
-            'phone'           => $data['phone'] ?? null,
-            'status'          => 'NUEVO',
-            'subtotal'        => $subtotal,
-            'delivery_fee'    => $deliveryFee,
-            'total_amount'    => $totalAmount,
+            'address_detail' => $data['address_detail'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'status' => 'NUEVO',
+            'subtotal' => $subtotal,
+            'delivery_fee' => $deliveryFee,
+            'total_amount' => $totalAmount,
             'activation_time' => $data['activation_time'] ?? null,
-            'notes'           => $data['notes'] ?? null,
+            'notes' => $data['notes'] ?? null,
+            'sort_position' => $nextSort,
         ];
 
         $insert->values($orderData);
@@ -73,17 +87,17 @@ class OrderService
 
             $insertItem = $sql->insert('order_items');
             $insertItem->values([
-                'order_id'    => $orderId,
-                'item_type'   => $item['item_type'] ?? 'pizza',
-                'item_name'   => $item['item_name'] ?? '',
-                'details'     => $item['details'] ?? null,
+                'order_id' => $orderId,
+                'item_type' => $item['item_type'] ?? 'pizza',
+                'item_name' => $item['item_name'] ?? '',
+                'details' => $item['details'] ?? null,
                 'removed_ingredients' => isset($item['removed_ingredients'])
                     ? json_encode($item['removed_ingredients']) : null,
-                'quantity'    => $qty,
-                'unit_price'  => $unitPrice,
+                'quantity' => $qty,
+                'unit_price' => $unitPrice,
                 'total_price' => $unitPrice * $qty,
-                'comments'    => $item['comments'] ?? null,
-                'sort_order'  => $i,
+                'comments' => $item['comments'] ?? null,
+                'sort_order' => $i,
             ]);
             $sql->prepareStatementForSqlObject($insertItem)->execute();
 
@@ -94,10 +108,10 @@ class OrderService
                 foreach ($item['extras'] as $extra) {
                     $insertExtra = $sql->insert('order_item_extras');
                     $insertExtra->values([
-                        'order_item_id'   => $itemId,
-                        'ingredient_id'   => $extra['ingredient_id'] ?? null,
+                        'order_item_id' => $itemId,
+                        'ingredient_id' => $extra['ingredient_id'] ?? null,
                         'ingredient_name' => $extra['ingredient_name'] ?? '',
-                        'extra_price'     => (int) ($extra['extra_price'] ?? 0),
+                        'extra_price' => (int) ($extra['extra_price'] ?? 0),
                     ]);
                     $sql->prepareStatementForSqlObject($insertExtra)->execute();
                 }
@@ -139,7 +153,8 @@ class OrderService
         $result = $sql->prepareStatementForSqlObject($select)->execute();
         $row = $result->current();
 
-        if (!$row) return null;
+        if (!$row)
+            return null;
 
         return $this->hydrateOrder($row);
     }
@@ -164,14 +179,15 @@ class OrderService
         $sql = new Sql($this->db);
         $select = $sql->select('orders');
         $select->where(function (Where $where) {
-            $where->notIn('status', ['LISTO', 'RETIRADO', 'EN_CAMINO', 'ENTREGADO', 'ELIMINADO']);
+            $where->notIn('status', ['LISTO', 'RETIRADO', 'EN_CAMINO', 'ELIMINADO']);
+            $where->isNull('time_completed');
             $where->nest()
                 ->isNull('activation_time')
                 ->or
                 ->lessThanOrEqualTo('activation_time', new Expression('NOW()'))
                 ->unnest();
         });
-        $select->order('time_created ASC');
+        $select->order('sort_position ASC, time_created ASC');
 
         $result = $sql->prepareStatementForSqlObject($select)->execute();
         $orders = $this->hydrateOrders($result);
@@ -225,7 +241,10 @@ class OrderService
                 $where->equalTo('delivery_type', $filters['delivery_type']);
             }
             if (!empty($filters['date'])) {
-                $where->like('time_created', $filters['date'] . '%');
+                $filterDate = $filters['date'];
+                $startTime = $filterDate . ' 01:00:00';
+                $endTime = date('Y-m-d', strtotime($filterDate . ' +1 day')) . ' 00:59:59';
+                $where->between('time_created', $startTime, $endTime);
             }
         });
         $select->order('time_delivered DESC');
@@ -267,29 +286,44 @@ class OrderService
 
         // Verificar que existe
         $order = $this->getOrderById($id);
-        if (!$order) return null;
+        if (!$order)
+            return null;
 
         $updateData = ['status' => $newStatus];
 
-        // Actualizar timestamps según estado
-        switch ($newStatus) {
-            case 'HORNO':
-                $updateData['time_entered_oven'] = date('Y-m-d H:i:s');
-                break;
-            case 'LISTO':
-                $updateData['time_completed'] = date('Y-m-d H:i:s');
-                break;
-            case 'RETIRADO':
-            case 'EN_CAMINO':
-                $updateData['time_pickup'] = date('Y-m-d H:i:s');
-                break;
-            case 'ENTREGADO':
-                $updateData['time_delivered'] = date('Y-m-d H:i:s');
-                break;
-            case 'ELIMINADO':
-                $updateData['time_delivered'] = date('Y-m-d H:i:s');
-                $updateData['is_deleted'] = 1;
-                break;
+        if ($newStatus === 'LISTO' && $order['status'] === 'ENTREGADO') {
+            // El pedido ya fue entregado (ej. desde mostrador antes de que cocina terminara).
+            // No cambiamos el estado a LISTO para que no regrese a Pedidos Activos.
+            // Solo marcamos que la cocina ya lo terminó.
+            unset($updateData['status']);
+            $updateData['time_completed'] = date('Y-m-d H:i:s');
+        } else {
+            // Actualizar timestamps según estado
+            switch ($newStatus) {
+                case 'PREP':
+                    $updateData['time_prep'] = date('Y-m-d H:i:s');
+                    break;
+                case 'ARMADO':
+                    $updateData['time_armado'] = date('Y-m-d H:i:s');
+                    break;
+                case 'HORNO':
+                    $updateData['time_entered_oven'] = date('Y-m-d H:i:s');
+                    break;
+                case 'LISTO':
+                    $updateData['time_completed'] = date('Y-m-d H:i:s');
+                    break;
+                case 'RETIRADO':
+                case 'EN_CAMINO':
+                    $updateData['time_pickup'] = date('Y-m-d H:i:s');
+                    break;
+                case 'ENTREGADO':
+                    $updateData['time_delivered'] = date('Y-m-d H:i:s');
+                    break;
+                case 'ELIMINADO':
+                    $updateData['time_delivered'] = date('Y-m-d H:i:s');
+                    $updateData['is_deleted'] = 1;
+                    break;
+            }
         }
 
         $update = $sql->update('orders');
@@ -309,7 +343,8 @@ class OrderService
         $sql = new Sql($this->db);
 
         $order = $this->getOrderById($id);
-        if (!$order) return null;
+        if (!$order)
+            return null;
 
         $updateData = [];
         $fields = [
@@ -352,17 +387,17 @@ class OrderService
 
                 $insertItem = $sql->insert('order_items');
                 $insertItem->values([
-                    'order_id'    => $id,
-                    'item_type'   => $item['item_type'] ?? 'pizza',
-                    'item_name'   => $item['item_name'] ?? '',
-                    'details'     => $item['details'] ?? null,
+                    'order_id' => $id,
+                    'item_type' => $item['item_type'] ?? 'pizza',
+                    'item_name' => $item['item_name'] ?? '',
+                    'details' => $item['details'] ?? null,
                     'removed_ingredients' => isset($item['removed_ingredients'])
                         ? json_encode($item['removed_ingredients']) : null,
-                    'quantity'    => $qty,
-                    'unit_price'  => $unitPrice,
+                    'quantity' => $qty,
+                    'unit_price' => $unitPrice,
                     'total_price' => $unitPrice * $qty,
-                    'comments'    => $item['comments'] ?? null,
-                    'sort_order'  => $i,
+                    'comments' => $item['comments'] ?? null,
+                    'sort_order' => $i,
                 ]);
                 $sql->prepareStatementForSqlObject($insertItem)->execute();
 
@@ -372,10 +407,10 @@ class OrderService
                     foreach ($item['extras'] as $extra) {
                         $insertExtra = $sql->insert('order_item_extras');
                         $insertExtra->values([
-                            'order_item_id'   => $itemId,
-                            'ingredient_id'   => $extra['ingredient_id'] ?? null,
+                            'order_item_id' => $itemId,
+                            'ingredient_id' => $extra['ingredient_id'] ?? null,
                             'ingredient_name' => $extra['ingredient_name'] ?? '',
-                            'extra_price'     => (int) ($extra['extra_price'] ?? 0),
+                            'extra_price' => (int) ($extra['extra_price'] ?? 0),
                         ]);
                         $sql->prepareStatementForSqlObject($insertExtra)->execute();
                     }
@@ -384,11 +419,23 @@ class OrderService
 
             // Actualizar totales
             $deliveryFee = $order['delivery_fee'];
+            $newTotal = $subtotal + $deliveryFee;
+
+            if (isset($data['manual_total']) && is_numeric($data['manual_total'])) {
+                $newTotal = (int) $data['manual_total'];
+            }
+
             $update = $sql->update('orders');
             $update->set([
                 'subtotal' => $subtotal,
-                'total_amount' => $subtotal + $deliveryFee,
+                'total_amount' => $newTotal,
             ]);
+            $update->where(['id' => $id]);
+            $sql->prepareStatementForSqlObject($update)->execute();
+        } elseif (isset($data['manual_total']) && is_numeric($data['manual_total'])) {
+            // Caso donde solo se modifique el total manual sin cambiar items
+            $update = $sql->update('orders');
+            $update->set(['total_amount' => (int) $data['manual_total']]);
             $update->where(['id' => $id]);
             $sql->prepareStatementForSqlObject($update)->execute();
         }
@@ -449,28 +496,13 @@ class OrderService
         $lat = (float) $data[0]['lat'];
         $lng = (float) ($data[0]['lon'] ?? 0);
 
-        // Obtener zonas de delivery
-        $sql = new Sql($this->db);
-        $select = $sql->select('delivery_zones')->order('sort_order ASC');
-        $result = $sql->prepareStatementForSqlObject($select)->execute();
-
-        $extraCharge = 0;
-        $zoneName = 'Zona Base';
-        foreach ($result as $zone) {
-            if ($lat > (float) $zone['lat_threshold']) {
-                $extraCharge = (int) $zone['extra_charge'];
-                $zoneName = $zone['name'];
-                break;
-            }
-        }
-
         return [
             'lat' => $lat,
             'lng' => $lng,
-            'zone' => $zoneName,
+            'zone' => 'Zona Base',
             'base_fee' => $baseFee,
-            'extra_charge' => $extraCharge,
-            'total_fee' => $baseFee + $extraCharge,
+            'extra_charge' => 0,
+            'total_fee' => $baseFee,
         ];
     }
 
@@ -481,8 +513,10 @@ class OrderService
     public function getTimeEstimation(): array
     {
         $ovenChambers = (int) $this->getConfig('oven_chambers', '1');
-        if ($ovenChambers < 1) $ovenChambers = 1;
-        if ($ovenChambers > 2) $ovenChambers = 2;
+        if ($ovenChambers < 1)
+            $ovenChambers = 1;
+        if ($ovenChambers > 2)
+            $ovenChambers = 2;
 
         // Contar pizzas en cola
         $sql = new Sql($this->db);
@@ -502,10 +536,14 @@ class OrderService
         $totalPizzas = $pizzasInQueue + 2;
         $effectivePizzas = $totalPizzas / $ovenChambers;
 
-        if ($effectivePizzas <= 2.1) $minutes = 15;
-        elseif ($effectivePizzas <= 6.1) $minutes = 20;
-        elseif ($effectivePizzas <= 8.1) $minutes = 25;
-        elseif ($effectivePizzas <= 10.1) $minutes = 30;
+        if ($effectivePizzas <= 2.1)
+            $minutes = 15;
+        elseif ($effectivePizzas <= 6.1)
+            $minutes = 20;
+        elseif ($effectivePizzas <= 8.1)
+            $minutes = 25;
+        elseif ($effectivePizzas <= 10.1)
+            $minutes = 30;
         else {
             $extraSteps = ceil(($effectivePizzas - 10) / 2);
             $minutes = 30 + ($extraSteps * 5);
@@ -557,20 +595,40 @@ class OrderService
     }
 
     // ==========================================
+    // REORDENAR
+    // ==========================================
+
+    public function updateOrderSort(array $orderIds): void
+    {
+        $sql = new Sql($this->db);
+        foreach ($orderIds as $pos => $id) {
+            $update = $sql->update('orders');
+            $update->set(['sort_position' => $pos]);
+            $update->where(['id' => (int) $id]);
+            $sql->prepareStatementForSqlObject($update)->execute();
+        }
+    }
+
+    // ==========================================
     // HELPERS
     // ==========================================
 
     private function generateOrderNumber(): string
     {
+        // El día comercial empieza a las 01:00:00 y termina al día siguiente a las 00:59:59
+        // Si son las 00:30, restarle 1 hora nos deja en el día anterior.
+        $businessDate = date('Y-m-d', strtotime('-1 hour'));
+        $startTime = $businessDate . ' 01:00:00';
+        $endTime = date('Y-m-d', strtotime($businessDate . ' +1 day')) . ' 00:59:59';
+
         $sql = new Sql($this->db);
         $select = $sql->select('orders')
             ->columns(['max_num' => new Expression('MAX(CAST(order_number AS UNSIGNED))')])
-            ->where->like('time_created', date('Y-m-d') . '%');
+            ->where(function (Where $where) use ($startTime, $endTime) {
+                $where->between('time_created', $startTime, $endTime);
+            });
 
-        $select2 = $sql->select('orders')
-            ->columns(['max_num' => new Expression('MAX(CAST(order_number AS UNSIGNED))')]);
-
-        $result = $sql->prepareStatementForSqlObject($select2)->execute();
+        $result = $sql->prepareStatementForSqlObject($select)->execute();
         $row = $result->current();
         $next = (int) ($row['max_num'] ?? 0) + 1;
         return str_pad((string) $next, 3, '0', STR_PAD_LEFT);

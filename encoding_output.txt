@@ -1,0 +1,65 @@
+PIZZAS (latin1 read):
+  1: ClÈ÷ú?ísica
+  2: ClÈ÷ú?ísica Salame
+  3: ClÈ÷ú?ísica JamÈ÷úÈ÷Ún
+  4: ClÈ÷ú?ísica ChampiÈ÷úÈ¹ãÈ÷úÈ÷Ún
+  5: ClÈ÷ú?ísica Pepperoni
+  6: Napolitana
+  7: Di'Pollo
+  8: Hawaiana
+  9: EspaÈ÷úÈ¹ãola
+  10: NÈ÷ú?ípoles
+  11: Vegetariana
+  12: Barbecue
+  13: MediterrÈ÷ú?ínea
+  14: Luigi's
+  15: Arma Tu Pizza
+
+INGREDIENTS (latin1 read):
+  1: Aceitunas
+  2: Albahaca
+  3: Camarones
+  4: Carne
+  5: ChampiÈ÷úÈ¹ãÈ÷úÈ÷Ún
+  6: Choclo
+  7: Chorizo EspaÈ÷úÈ¹ãol
+  8: Crema
+  9: JamÈ÷úÈ÷Ún
+  10: JamÈ÷úÈ÷Ún Serrano
+  22: OrÈ÷ú?½gano
+  14: Pepperoni
+  11: PimentÈ÷úÈ÷Ún
+  12: PiÈ÷úÈ¹ãa
+  13: Pollo
+  15: Queso
+  16: Queso Parmesano
+  17: Salame
+  18: Salsa Barbecue
+  21: Salsa de tomate
+  19: Tocino
+  20: Tomate Cherry
+
+PROMOS (latin1 read):
+  1: Promo 1
+  2: Promo 2
+  3: Promo del DÈ÷ú?Ýa
+
+DRINKS (latin1 read):
+  1: Coca Cola
+  2: Coca Cola Zero
+  3: Fanta
+  4: Inca Cola
+  5: Sprite
+
+SIDES (latin1 read):
+PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'luigis.sides' doesn't exist in D:\app\Luigis_pos\back\check_encoding.php:31
+Stack trace:
+
+#0 D:\app\Luigis_pos\back\check_encoding.php(31): PDO->query('SELECT id, name...')
+#1 {main}
+Fatal error: Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'luigis.sides' doesn't exist in D:\app\Luigis_pos\back\check_encoding.php:31
+  thrown in D:\app\Luigis_pos\back\check_encoding.php on line 31
+Stack trace:
+#0 D:\app\Luigis_pos\back\check_encoding.php(31): PDO->query('SELECT id, name...')
+#1 {main}
+  thrown in D:\app\Luigis_pos\back\check_encoding.php on line 31

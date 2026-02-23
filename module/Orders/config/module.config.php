@@ -30,6 +30,16 @@ return [
                     ],
                 ],
             ],
+            'api-orders-reorder' => [
+                'type' => Literal::class,
+                'options' => [
+                    'route' => '/api/orders/reorder',
+                    'defaults' => [
+                        'controller' => Controller\OrderController::class,
+                        'action' => 'reorder',
+                    ],
+                ],
+            ],
             'api-orders-kitchen' => [
                 'type' => Literal::class,
                 'options' => [

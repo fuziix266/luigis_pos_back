@@ -3,7 +3,7 @@
 return [
     'db' => [
         'driver' => 'Pdo',
-        'dsn' => 'mysql:dbname=luigis_pos;host=localhost;charset=utf8mb4',
+        'dsn' => 'mysql:dbname=luigis;host=localhost;charset=utf8mb4',
         'username' => 'root',
         'password' => '',
         'driver_options' => [

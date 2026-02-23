@@ -1,0 +1,94 @@
+=== FIXING PIZZAS ===
+  Pizza 1 => Clasica
+  Pizza 2 => Clasica Salame
+  Pizza 3 => Clasica Jamon
+  Pizza 4 => Clasica Champinon
+  Pizza 5 => Clasica Pepperoni
+  Pizza 6 => Napolitana
+  Pizza 7 => Di'Pollo
+  Pizza 8 => Hawaiana
+  Pizza 9 => Espanola
+  Pizza 10 => Napoles
+  Pizza 11 => Vegetariana
+  Pizza 12 => Barbecue
+  Pizza 13 => Mediterranea
+  Pizza 14 => Luigi's
+  Pizza 15 => Arma Tu Pizza
+
+=== FIXING INGREDIENTS ===
+  Ingredient 1 => Aceitunas
+  Ingredient 2 => Albahaca
+  Ingredient 3 => Camarones
+  Ingredient 4 => Carne
+  Ingredient 5 => Champinon
+  Ingredient 6 => Choclo
+  Ingredient 7 => Chorizo Espanol
+  Ingredient 8 => Crema
+  Ingredient 9 => Jamon
+  Ingredient 10 => Jamon Serrano
+  Ingredient 22 => Oregano
+  Ingredient 14 => Pepperoni
+  Ingredient 11 => Pimenton
+  Ingredient 12 => Pina
+  Ingredient 13 => Pollo
+  Ingredient 15 => Queso
+  Ingredient 16 => Queso Parmesano
+  Ingredient 17 => Salame
+  Ingredient 18 => Salsa Barbecue
+  Ingredient 21 => Salsa de tomate
+  Ingredient 19 => Tocino
+  Ingredient 20 => Tomate Cherry
+
+=== FIXING PROMOS ===
+  Promo 1 => Promo 1
+  Promo 2 => Promo 2
+  Promo 3 => Promo del Dia
+
+=== DONE ===
+
+=== VERIFICATION ===
+PIZZAS:
+  1: Clasica
+  2: Clasica Salame
+  3: Clasica Jamon
+  4: Clasica Champinon
+  5: Clasica Pepperoni
+  6: Napolitana
+  7: Di'Pollo
+  8: Hawaiana
+  9: Espanola
+  10: Napoles
+  11: Vegetariana
+  12: Barbecue
+  13: Mediterranea
+  14: Luigi's
+  15: Arma Tu Pizza
+
+INGREDIENTS:
+  1: Aceitunas
+  2: Albahaca
+  3: Camarones
+  4: Carne
+  5: Champinon
+  6: Choclo
+  7: Chorizo Espanol
+  8: Crema
+  9: Jamon
+  10: Jamon Serrano
+  11: Pimenton
+  12: Pina
+  13: Pollo
+  14: Pepperoni
+  15: Queso
+  16: Queso Parmesano
+  17: Salame
+  18: Salsa Barbecue
+  19: Tocino
+  20: Tomate Cherry
+  21: Salsa de tomate
+  22: Oregano
+
+PROMOS:
+  1: Promo 1 | 2 Pizzas Clasicas (opcion 3ra pizza por $18.000)
+  2: Promo 2 | 2 Pizzas + Palitos Ajo + Bebida 1.5L
+  3: Promo del Dia | 

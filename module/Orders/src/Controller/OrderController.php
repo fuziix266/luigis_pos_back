@@ -23,7 +23,8 @@ class OrderController extends AbstractActionController
     public function indexAction(): JsonModel
     {
         $request = $this->getRequest();
-        if ($request->isOptions()) return new JsonModel([]);
+        if ($request->isOptions())
+            return new JsonModel([]);
 
         $id = $this->params()->fromRoute('id');
 
@@ -76,11 +77,36 @@ class OrderController extends AbstractActionController
         return new JsonModel(['success' => false, 'error' => 'Method not allowed']);
     }
 
+    // POST /api/orders/reorder
+    public function reorderAction(): JsonModel
+    {
+        $request = $this->getRequest();
+        if ($request->isOptions())
+            return new JsonModel([]);
+
+        if (!$request->isPost()) {
+            $this->getResponse()->setStatusCode(405);
+            return new JsonModel(['success' => false, 'error' => 'Use POST']);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+        $orderIds = $data['orderIds'] ?? [];
+
+        if (empty($orderIds)) {
+            return new JsonModel(['success' => false, 'error' => 'No IDs provided']);
+        }
+
+        $this->orderService->updateOrderSort($orderIds);
+
+        return new JsonModel(['success' => true, 'message' => 'Orders sorted']);
+    }
+
     // PATCH /api/orders/:id/status
     public function statusAction(): JsonModel
     {
         $request = $this->getRequest();
-        if ($request->isOptions()) return new JsonModel([]);
+        if ($request->isOptions())
+            return new JsonModel([]);
 
         if (!$request->isPatch() && !$request->isPut()) {
             $this->getResponse()->setStatusCode(405);
@@ -109,7 +135,8 @@ class OrderController extends AbstractActionController
     // GET /api/orders/kitchen
     public function kitchenAction(): JsonModel
     {
-        if ($this->getRequest()->isOptions()) return new JsonModel([]);
+        if ($this->getRequest()->isOptions())
+            return new JsonModel([]);
 
         return new JsonModel([
             'success' => true,
@@ -120,7 +147,8 @@ class OrderController extends AbstractActionController
     // GET /api/orders/delivery
     public function deliveryListAction(): JsonModel
     {
-        if ($this->getRequest()->isOptions()) return new JsonModel([]);
+        if ($this->getRequest()->isOptions())
+            return new JsonModel([]);
 
         return new JsonModel([
             'success' => true,
@@ -131,7 +159,8 @@ class OrderController extends AbstractActionController
     // GET /api/orders/scheduled
     public function scheduledAction(): JsonModel
     {
-        if ($this->getRequest()->isOptions()) return new JsonModel([]);
+        if ($this->getRequest()->isOptions())
+            return new JsonModel([]);
 
         return new JsonModel([
             'success' => true,
@@ -142,7 +171,8 @@ class OrderController extends AbstractActionController
     // GET /api/orders/history?status=&payment_method=&delivery_type=&date=
     public function historyAction(): JsonModel
     {
-        if ($this->getRequest()->isOptions()) return new JsonModel([]);
+        if ($this->getRequest()->isOptions())
+            return new JsonModel([]);
 
         $filters = [
             'status' => $this->params()->fromQuery('status'),
@@ -160,7 +190,8 @@ class OrderController extends AbstractActionController
     // GET /api/estimation/time
     public function estimationAction(): JsonModel
     {
-        if ($this->getRequest()->isOptions()) return new JsonModel([]);
+        if ($this->getRequest()->isOptions())
+            return new JsonModel([]);
 
         return new JsonModel([
             'success' => true,
@@ -172,7 +203,8 @@ class OrderController extends AbstractActionController
     public function geocodeAction(): JsonModel
     {
         $request = $this->getRequest();
-        if ($request->isOptions()) return new JsonModel([]);
+        if ($request->isOptions())
+            return new JsonModel([]);
 
         if (!$request->isPost()) {
             $this->getResponse()->setStatusCode(405);
@@ -198,7 +230,8 @@ class OrderController extends AbstractActionController
     public function configAction(): JsonModel
     {
         $request = $this->getRequest();
-        if ($request->isOptions()) return new JsonModel([]);
+        if ($request->isOptions())
+            return new JsonModel([]);
 
         $key = $this->params()->fromRoute('key');
 
