@@ -7,7 +7,7 @@ return [
         'username' => 'root',
         'password' => '',
         'driver_options' => [
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'",
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8', time_zone = '-03:00'",
         ],
     ],
 

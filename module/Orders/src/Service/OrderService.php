@@ -27,16 +27,22 @@ class OrderService
         // Generar número de orden
         $orderNumber = $this->generateOrderNumber();
 
-        // Calcular subtotal
+        // Calcular subtotal and detect delivery fee in items
         $subtotal = 0;
+        $deliveryFeeFromItems = 0;
         $items = $data['items'] ?? [];
         foreach ($items as $item) {
-            $subtotal += ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 1);
+            $itemPrice = ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 1);
+            if (($item['item_type'] ?? '') === 'delivery_fee') {
+                $deliveryFeeFromItems = $itemPrice;
+            } else {
+                $subtotal += $itemPrice;
+            }
         }
 
-        // Delivery fee
-        $deliveryFee = 0;
-        if (($data['delivery_type'] ?? 'Local') === 'Delivery') {
+        // Delivery fee: use value from items if present, otherwise use base fee if it's a delivery
+        $deliveryFee = $deliveryFeeFromItems;
+        if ($deliveryFee === 0 && ($data['delivery_type'] ?? 'Local') === 'Delivery') {
             $deliveryFee = (int) $this->getConfig('delivery_base_fee', '3000');
         }
 
@@ -73,6 +79,7 @@ class OrderService
             'activation_time' => $data['activation_time'] ?? null,
             'notes' => $data['notes'] ?? null,
             'sort_position' => $nextSort,
+            'time_created' => date('Y-m-d H:i:s'),
         ];
 
         $insert->values($orderData);
@@ -127,17 +134,18 @@ class OrderService
 
     public function getActiveOrders(): array
     {
+        $now = date('Y-m-d H:i:s');
         $sql = new Sql($this->db);
         $select = $sql->select('orders')
             ->where->notIn('status', ['ENTREGADO', 'ELIMINADO']);
 
         $select2 = $sql->select('orders');
-        $select2->where(function (Where $where) {
+        $select2->where(function (Where $where) use ($now) {
             $where->notIn('status', ['ENTREGADO', 'ELIMINADO']);
             $where->nest()
                 ->isNull('activation_time')
                 ->or
-                ->lessThanOrEqualTo('activation_time', new Expression('NOW()'))
+                ->lessThanOrEqualTo('activation_time', $now)
                 ->unnest();
         });
         $select2->order('sort_position ASC, time_created ASC');
@@ -161,12 +169,13 @@ class OrderService
 
     public function getScheduledOrders(): array
     {
+        $now = date('Y-m-d H:i:s');
         $sql = new Sql($this->db);
         $select = $sql->select('orders');
-        $select->where(function (Where $where) {
+        $select->where(function (Where $where) use ($now) {
             $where->notIn('status', ['ENTREGADO', 'ELIMINADO']);
             $where->isNotNull('activation_time');
-            $where->greaterThan('activation_time', new Expression('NOW()'));
+            $where->greaterThan('activation_time', $now);
         });
         $select->order('activation_time ASC');
 
@@ -176,15 +185,16 @@ class OrderService
 
     public function getKitchenOrders(): array
     {
+        $now = date('Y-m-d H:i:s');
         $sql = new Sql($this->db);
         $select = $sql->select('orders');
-        $select->where(function (Where $where) {
+        $select->where(function (Where $where) use ($now) {
             $where->notIn('status', ['LISTO', 'RETIRADO', 'EN_CAMINO', 'ELIMINADO']);
             $where->isNull('time_completed');
             $where->nest()
                 ->isNull('activation_time')
                 ->or
-                ->lessThanOrEqualTo('activation_time', new Expression('NOW()'))
+                ->lessThanOrEqualTo('activation_time', $now)
                 ->unnest();
         });
         $select->order('sort_position ASC, time_created ASC');
@@ -207,15 +217,16 @@ class OrderService
 
     public function getDeliveryOrders(): array
     {
+        $now = date('Y-m-d H:i:s');
         $sql = new Sql($this->db);
         $select = $sql->select('orders');
-        $select->where(function (Where $where) {
+        $select->where(function (Where $where) use ($now) {
             $where->notIn('status', ['ENTREGADO', 'ELIMINADO']);
             $where->equalTo('delivery_type', 'Delivery');
             $where->nest()
                 ->isNull('activation_time')
                 ->or
-                ->lessThanOrEqualTo('activation_time', new Expression('NOW()'))
+                ->lessThanOrEqualTo('activation_time', $now)
                 ->unnest();
         });
         $select->order('time_created ASC');
@@ -378,12 +389,19 @@ class OrderService
             $delete->where(['order_id' => $id]);
             $sql->prepareStatementForSqlObject($delete)->execute();
 
-            // Recalcular subtotal
+            // Recalcular subtotal and detect delivery fee in items
             $subtotal = 0;
+            $deliveryFeeFromItems = 0;
             foreach ($data['items'] as $i => $item) {
                 $qty = (int) ($item['quantity'] ?? 1);
                 $unitPrice = (int) ($item['unit_price'] ?? 0);
-                $subtotal += $unitPrice * $qty;
+                $itemPrice = $unitPrice * $qty;
+
+                if (($item['item_type'] ?? '') === 'delivery_fee') {
+                    $deliveryFeeFromItems = $itemPrice;
+                } else {
+                    $subtotal += $itemPrice;
+                }
 
                 $insertItem = $sql->insert('order_items');
                 $insertItem->values([
@@ -418,7 +436,12 @@ class OrderService
             }
 
             // Actualizar totales
-            $deliveryFee = $order['delivery_fee'];
+            // If we found a delivery fee in the new items, use that.
+            // If not, but the order type is Delivery, keep the original delivery fee.
+            $deliveryFee = $deliveryFeeFromItems;
+            if ($deliveryFee === 0 && ($data['delivery_type'] ?? $order['delivery_type']) === 'Delivery') {
+                $deliveryFee = $order['delivery_fee'] > 0 ? $order['delivery_fee'] : (int) $this->getConfig('delivery_base_fee', '3000');
+            }
             $newTotal = $subtotal + $deliveryFee;
 
             if (isset($data['manual_total']) && is_numeric($data['manual_total'])) {
