@@ -179,6 +179,7 @@ class OrderController extends AbstractActionController
             'payment_method' => $this->params()->fromQuery('payment_method'),
             'delivery_type' => $this->params()->fromQuery('delivery_type'),
             'date' => $this->params()->fromQuery('date'),
+            'end_date' => $this->params()->fromQuery('end_date'),
         ];
 
         return new JsonModel([

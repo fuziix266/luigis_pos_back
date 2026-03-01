@@ -253,8 +253,19 @@ class OrderService
             }
             if (!empty($filters['date'])) {
                 $filterDate = $filters['date'];
-                $startTime = $filterDate . ' 01:00:00';
-                $endTime = date('Y-m-d', strtotime($filterDate . ' +1 day')) . ' 00:59:59';
+
+                if (!empty($filters['end_date'])) {
+                    // Valid date range
+                    $startTime = $filterDate . ' 00:00:00'; // Start of the first day
+                    // End of the last day
+                    $endTime = date('Y-m-d', strtotime($filters['end_date'])) . ' 23:59:59';
+                } else {
+                    // Single day (using the commercial business day logic starting at 01:00:00 instead, or generic)
+                    // Let's stick to the 01:00 to 00:59 logic used previously for single days
+                    $startTime = $filterDate . ' 01:00:00';
+                    $endTime = date('Y-m-d', strtotime($filterDate . ' +1 day')) . ' 00:59:59';
+                }
+
                 $where->between('time_created', $startTime, $endTime);
             }
         });
