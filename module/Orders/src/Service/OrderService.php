@@ -366,7 +366,8 @@ class OrderService
             'address_detail',
             'phone',
             'notes',
-            'activation_time'
+            'activation_time',
+            'is_paid'
         ];
 
         foreach ($fields as $field) {
@@ -690,6 +691,7 @@ class OrderService
             'time_pickup' => $row['time_pickup'],
             'time_delivered' => $row['time_delivered'],
             'is_deleted' => (bool) $row['is_deleted'],
+            'is_paid' => (bool) ($row['is_paid'] ?? false),
             'notes' => $row['notes'],
             'items' => $this->getOrderItems($orderId),
         ];
