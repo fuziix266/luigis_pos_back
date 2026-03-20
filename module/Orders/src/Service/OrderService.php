@@ -387,6 +387,30 @@ class OrderService
             }
         }
 
+        // If delivery_type changed and the order has an activation_time, recalculate it.
+        // Delivery = 40 min before, Local/Retiro = 20 min before.
+        // So if switching between them, we adjust by ±20 minutes.
+        if (isset($data['delivery_type']) && !empty($order['activation_time']) && !isset($data['activation_time'])) {
+            $oldType = $order['delivery_type'] ?? '';
+            $newType = $data['delivery_type'];
+
+            $deliveryTypes = ['Delivery']; // Only own delivery needs 40 min; PedidosYa/UberEats are external (20 min)
+            $wasDelivery = in_array($oldType, $deliveryTypes);
+            $isDelivery = in_array($newType, $deliveryTypes);
+
+            if ($wasDelivery !== $isDelivery) {
+                $oldActivation = new \DateTime($order['activation_time']);
+                if (!$wasDelivery && $isDelivery) {
+                    // Changed from Local/Retiro (20 min) to Delivery (40 min): subtract 20 more minutes
+                    $oldActivation->modify('-20 minutes');
+                } elseif ($wasDelivery && !$isDelivery) {
+                    // Changed from Delivery (40 min) to Local/Retiro (20 min): add 20 minutes back
+                    $oldActivation->modify('+20 minutes');
+                }
+                $updateData['activation_time'] = $oldActivation->format('Y-m-d H:i:s');
+            }
+        }
+
         if (!empty($updateData)) {
             $update = $sql->update('orders');
             $update->set($updateData);
