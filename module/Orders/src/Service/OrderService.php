@@ -411,6 +411,13 @@ class OrderService
             }
         }
 
+        // Si delivery_type cambió a Delivery y delivery_fee es 0, asignar el fee base
+        if (isset($data['delivery_type']) && $data['delivery_type'] === 'Delivery' && (int) $order['delivery_fee'] === 0) {
+            $updateData['delivery_fee'] = (int) $this->getConfig('delivery_base_fee', '3000');
+            // También actualizar el total para incluir el delivery fee
+            $updateData['total_amount'] = (int) $order['total_amount'] + $updateData['delivery_fee'];
+        }
+
         if (!empty($updateData)) {
             $update = $sql->update('orders');
             $update->set($updateData);
@@ -487,6 +494,7 @@ class OrderService
             $update = $sql->update('orders');
             $update->set([
                 'subtotal' => $subtotal,
+                'delivery_fee' => $deliveryFee,
                 'total_amount' => $newTotal,
             ]);
             $update->where(['id' => $id]);
