@@ -59,6 +59,16 @@ return [
                     ],
                 ],
             ],
+            'api-catalog-prices-update' => [
+                'type' => Literal::class,
+                'options' => [
+                    'route' => '/api/catalog/update-prices',
+                    'defaults' => [
+                        'controller' => Controller\CatalogController::class,
+                        'action' => 'updatePrices',
+                    ],
+                ],
+            ],
             'api-catalog-promos' => [
                 'type' => Segment::class,
                 'options' => [

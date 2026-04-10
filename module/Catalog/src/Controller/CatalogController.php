@@ -15,6 +15,30 @@ class CatalogController extends AbstractActionController
         $this->catalogService = $catalogService;
     }
 
+    public function updatePricesAction(): JsonModel
+    {
+        if ($this->getRequest()->isOptions()) return new JsonModel([]);
+        
+        $request = $this->getRequest();
+        if (!$request->isPost() && !$request->isPut()) {
+            return new JsonModel(['success' => false, 'error' => 'Method not allowed']);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!$data || !isset($data['updates'])) {
+            $this->getResponse()->setStatusCode(400);
+            return new JsonModel(['success' => false, 'error' => 'Invalid data format']);
+        }
+
+        try {
+            $this->catalogService->updatePrices($data['updates']);
+            return new JsonModel(['success' => true]);
+        } catch (\Exception $e) {
+            $this->getResponse()->setStatusCode(500);
+            return new JsonModel(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
     public function pizzasAction(): JsonModel
     {
         if ($this->getRequest()->isOptions()) return new JsonModel([]);

@@ -271,4 +271,72 @@ class CatalogService
 
         return $data;
     }
+
+    public function updatePrices(array $updates): void
+    {
+        $connection = $this->db->getDriver()->getConnection();
+        $connection->beginTransaction();
+        try {
+            $sql = new Sql($this->db);
+            
+            foreach ($updates as $update) {
+                $type = $update['type'] ?? null;
+                $price = isset($update['price']) ? (int) $update['price'] : null;
+                if ($price === null) continue;
+
+                switch ($type) {
+                    case 'pizza_price':
+                        $pizzaId = (int) $update['pizza_id'];
+                        $sizeId = (int) $update['size_id'];
+                        $updateObj = $sql->update('pizza_prices')
+                            ->set(['price' => $price])
+                            ->where([
+                                'pizza_id' => $pizzaId,
+                                'size_id' => $sizeId
+                            ]);
+                        $sql->prepareStatementForSqlObject($updateObj)->execute();
+                        break;
+                    case 'drink':
+                        $id = (int) $update['id'];
+                        $updateObj = $sql->update('drinks')
+                            ->set(['price' => $price])
+                            ->where(['id' => $id]);
+                        $sql->prepareStatementForSqlObject($updateObj)->execute();
+                        break;
+                    case 'side':
+                        $id = (int) $update['id'];
+                        $updateObj = $sql->update('side_dishes')
+                            ->set(['price' => $price])
+                            ->where(['id' => $id]);
+                        $sql->prepareStatementForSqlObject($updateObj)->execute();
+                        break;
+                    case 'promo':
+                        $id = (int) $update['id'];
+                        $updateObj = $sql->update('promos')
+                            ->set(['base_price' => $price])
+                            ->where(['id' => $id]);
+                        $sql->prepareStatementForSqlObject($updateObj)->execute();
+                        break;
+                    case 'size_extra':
+                        $id = (int) $update['id'];
+                        $updateObj = $sql->update('pizza_sizes')
+                            ->set(['extra_price' => $price])
+                            ->where(['id' => $id]);
+                        $sql->prepareStatementForSqlObject($updateObj)->execute();
+                        break;
+                    case 'config':
+                        $key = $update['key'];
+                        $updateObj = $sql->update('system_config')
+                            ->set(['config_value' => (string)$price])
+                            ->where(['config_key' => $key]);
+                        $sql->prepareStatementForSqlObject($updateObj)->execute();
+                        break;
+                }
+            }
+            $connection->commit();
+        } catch (\Exception $e) {
+            $connection->rollback();
+            throw $e;
+        }
+    }
 }

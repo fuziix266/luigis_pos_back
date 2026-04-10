@@ -240,7 +240,8 @@ class OrderService
         $sql = new Sql($this->db);
         $select = $sql->select('orders');
         $select->where(function (Where $where) use ($filters) {
-            $where->in('status', ['ENTREGADO', 'ELIMINADO']);
+            // Se eliminó la restricción para que traiga también los activos
+            
 
             if (!empty($filters['status']) && $filters['status'] !== 'Todos') {
                 $where->equalTo('status', $filters['status']);
@@ -269,7 +270,7 @@ class OrderService
                 $where->between('time_created', $startTime, $endTime);
             }
         });
-        $select->order('time_delivered DESC');
+        $select->order('time_created DESC');
 
         $result = $sql->prepareStatementForSqlObject($select)->execute();
         $orders = $this->hydrateOrders($result);
@@ -279,9 +280,13 @@ class OrderService
         $totalDelivered = 0;
         $totalDeleted = 0;
         foreach ($orders as $order) {
-            if ($order['status'] === 'ENTREGADO') {
-                $totalSales += $order['total_amount'];
-                $totalDelivered++;
+            if ($order['status'] !== 'ELIMINADO') {
+                // Sumamos tanto ENTREGADO como pedidos activos
+                // Se resta el delivery_fee para no sumar tarifa de envíos
+                $totalSales += ($order['total_amount'] - $order['delivery_fee']);
+                if ($order['status'] === 'ENTREGADO') {
+                    $totalDelivered++;
+                }
             } else {
                 $totalDeleted++;
             }
