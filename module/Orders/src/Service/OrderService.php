@@ -534,6 +534,43 @@ class OrderService
         $country = $this->getConfig('store_country', 'Chile');
         $baseFee = (int) $this->getConfig('delivery_base_fee', '3000');
 
+        if (preg_match('/^https?:\/\//i', trim($address))) {
+            $urlToTest = trim($address);
+            
+            if (strpos($urlToTest, 'goo.gl') !== false || strpos($urlToTest, 'maps.app.goo.gl') !== false) {
+                $ch = curl_init($urlToTest);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_NOBODY, true);
+                curl_exec($ch);
+                $expandedUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+                curl_close($ch);
+                if ($expandedUrl) {
+                    $urlToTest = $expandedUrl;
+                }
+            }
+
+            if (preg_match('/(?:@|q=|ll=)([-]?[0-9]{1,2}\.[0-9]+)[,%]([-]?[0-9]{1,3}\.[0-9]+)/', $urlToTest, $matches)) {
+                return [
+                    'lat' => (float)$matches[1],
+                    'lng' => (float)$matches[2],
+                    'zone' => 'Zona Base',
+                    'base_fee' => $baseFee,
+                    'extra_charge' => 0,
+                    'total_fee' => $baseFee,
+                ];
+            }
+            
+            return [
+                'lat' => null,
+                'lng' => null,
+                'zone' => 'Zona Base',
+                'base_fee' => $baseFee,
+                'extra_charge' => 0,
+                'total_fee' => $baseFee,
+            ];
+        }
+
         $q = urlencode("$address, $city, $country");
         $url = "https://nominatim.openstreetmap.org/search?q={$q}&format=json&limit=1";
 
